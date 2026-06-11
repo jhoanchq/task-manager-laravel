@@ -1,0 +1,430 @@
+name: Tareas
+description: |-
+
+  Endpoints para gestionar tareas (CRUD). Todos requieren autenticación.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/tasks
+    metadata:
+      custom: []
+      groupName: Tareas
+      groupDescription: |-
+
+        Endpoints para gestionar tareas (CRUD). Todos requieren autenticación.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Listar tareas'
+      description: 'Obtiene una lista paginada de tareas del usuario autenticado.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      page:
+        custom: []
+        name: page
+        description: 'Número de página.'
+        required: false
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      per_page:
+        custom: []
+        name: per_page
+        description: 'Items por página.'
+        required: false
+        example: '15'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      page: '1'
+      per_page: '15'
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "data": [
+              {
+                "id": 1,
+                "title": "Mi tarea",
+                "description": "Descripción de la tarea",
+                "status": "pending",
+                "created_at": "2026-06-11T12:00:00.000000Z",
+                "updated_at": "2026-06-11T12:00:00.000000Z"
+              }
+            ],
+            "meta": {
+              "current_page": 1,
+              "last_page": 1,
+              "per_page": 15,
+              "total": 1
+            }
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/tasks
+    metadata:
+      custom: []
+      groupName: Tareas
+      groupDescription: |-
+
+        Endpoints para gestionar tareas (CRUD). Todos requieren autenticación.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Crear tarea'
+      description: 'Crea una nueva tarea para el usuario autenticado.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      title:
+        custom: []
+        name: title
+        description: 'Título de la tarea.'
+        required: true
+        example: 'Comprar víveres'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      description:
+        custom: []
+        name: description
+        description: 'Descripción de la tarea.'
+        required: false
+        example: 'Leche, pan, huevos'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      status:
+        custom: []
+        name: status
+        description: 'Estado: pending, in_progress, completed.'
+        required: false
+        example: pending
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      title: 'Comprar víveres'
+      description: 'Leche, pan, huevos'
+      status: pending
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: |-
+          {
+            "message": "Tarea creada exitosamente.",
+            "data": {
+              "id": 1,
+              "title": "Comprar víveres",
+              "description": "Leche, pan, huevos",
+              "status": "pending",
+              "created_at": "2026-06-11T12:00:00.000000Z",
+              "updated_at": "2026-06-11T12:00:00.000000Z"
+            }
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/tasks/{id}'
+    metadata:
+      custom: []
+      groupName: Tareas
+      groupDescription: |-
+
+        Endpoints para gestionar tareas (CRUD). Todos requieren autenticación.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Ver tarea'
+      description: 'Muestra los detalles de una tarea específica.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the task.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      task:
+        custom: []
+        name: task
+        description: 'ID de la tarea.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      task: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "title": "Comprar víveres",
+              "description": "Leche, pan, huevos",
+              "status": "pending",
+              "created_at": "2026-06-11T12:00:00.000000Z",
+              "updated_at": "2026-06-11T12:00:00.000000Z"
+            }
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 403
+        content: |-
+          {
+            "message": "No autorizado."
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/v1/tasks/{id}'
+    metadata:
+      custom: []
+      groupName: Tareas
+      groupDescription: |-
+
+        Endpoints para gestionar tareas (CRUD). Todos requieren autenticación.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Actualizar tarea'
+      description: 'Actualiza los datos de una tarea existente.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the task.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      task:
+        custom: []
+        name: task
+        description: 'ID de la tarea.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      task: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      title:
+        custom: []
+        name: title
+        description: 'Título de la tarea.'
+        required: false
+        example: 'Comprar víveres actualizado'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      description:
+        custom: []
+        name: description
+        description: 'Descripción de la tarea.'
+        required: false
+        example: 'Solo leche y pan'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      status:
+        custom: []
+        name: status
+        description: 'Estado: pending, in_progress, completed.'
+        required: false
+        example: in_progress
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      title: 'Comprar víveres actualizado'
+      description: 'Solo leche y pan'
+      status: in_progress
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "title": "Comprar víveres actualizado",
+              "description": "Solo leche y pan",
+              "status": "in_progress",
+              "created_at": "2026-06-11T12:00:00.000000Z",
+              "updated_at": "2026-06-11T12:00:00.000000Z"
+            }
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/v1/tasks/{id}'
+    metadata:
+      custom: []
+      groupName: Tareas
+      groupDescription: |-
+
+        Endpoints para gestionar tareas (CRUD). Todos requieren autenticación.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Eliminar tarea'
+      description: 'Elimina una tarea del sistema.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the task.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      task:
+        custom: []
+        name: task
+        description: 'ID de la tarea.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      task: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "message": "Tarea eliminada exitosamente."
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
