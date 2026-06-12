@@ -7,7 +7,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::redirect('/dashboard', '/tasks')->name('dashboard');
     Route::resource('tasks', TaskController::class);
 });
