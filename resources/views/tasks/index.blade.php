@@ -8,7 +8,7 @@
     <div class="py-12" x-data="{ modal: null }">
         <div class="max-7xl mx-auto sm:px-6 lg:px-8">
             <div class="flex justify-end mb-4">
-                <button @click="modal = 'create'" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm flex items-center gap-2 transition">
+                <button @click="modal = 'create'" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Nueva Tarea
                 </button>
@@ -17,7 +17,6 @@
             @if (session('success'))
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">{{ session('success') }}</div>
             @endif
-
             @if ($errors->any())
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
                     <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
@@ -27,17 +26,14 @@
             @if ($tasks->isEmpty())
                 <div class="bg-white rounded-xl shadow p-12 text-center">
                     <p class="text-gray-500 mb-4">No tienes tareas registradas</p>
-                    <button @click="modal = 'create'" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">+ Nueva Tarea</button>
+                    <button @click="modal = 'create'" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">+ Nueva Tarea</button>
                 </div>
             @else
                 <div class="bg-white rounded-xl shadow overflow-hidden">
                     <table class="w-full">
                         <thead>
                             <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase">
-                                <th class="px-6 py-3">Título</th>
-                                <th class="px-6 py-3">Estado</th>
-                                <th class="px-6 py-3">Creada</th>
-                                <th class="px-6 py-3 text-right">Acciones</th>
+                                <th class="px-6 py-3">Título</th><th class="px-6 py-3">Estado</th><th class="px-6 py-3">Creada</th><th class="px-6 py-3 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
@@ -62,86 +58,88 @@
             @endif
         </div>
 
-        {{-- CREATE MODAL --}}
-        <div x-show="modal === 'create'" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
-            <div class="fixed inset-0 bg-black/50" @click="modal = null"></div>
-            <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 z-10">
-                <h3 class="text-lg font-bold mb-4">Nueva Tarea</h3>
-                <form method="POST" action="{{ route('tasks.store') }}">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="block text-sm font-medium mb-1">Título *</label>
-                        <input type="text" name="title" value="{{ old('title') }}" required class="w-full border rounded-lg px-3 py-2 text-sm">
-                        @error('title') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="block text-sm font-medium mb-1">Descripción</label>
-                        <textarea name="description" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm">{{ old('description') }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block text-sm font-medium mb-1">Estado</label>
-                        <select name="status" class="w-full border rounded-lg px-3 py-2 text-sm">
-                            <option value="pending">Pendiente</option>
-                            <option value="in_progress">En progreso</option>
-                            <option value="completed">Completada</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" @click="modal = null" class="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-50">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">Crear Tarea</button>
-                    </div>
-                </form>
+        {{-- MODAL CREAR --}}
+        <template x-teleport="body">
+            <div x-show="modal === 'create'" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div class="fixed inset-0 bg-black/50" @click="modal = null"></div>
+                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 z-10">
+                    <h3 class="text-lg font-bold mb-4">Nueva Tarea</h3>
+                    <form method="POST" action="{{ route('tasks.store') }}">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Título *</label>
+                            <input type="text" name="title" value="{{ old('title') }}" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                            @error('title') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Descripción</label>
+                            <textarea name="description" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm">{{ old('description') }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Estado</label>
+                            <select name="status" class="w-full border rounded-lg px-3 py-2 text-sm">
+                                <option value="pending">Pendiente</option>
+                                <option value="in_progress">En progreso</option>
+                                <option value="completed">Completada</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" @click="modal = null" class="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-50">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">Crear Tarea</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+        </template>
 
-        {{-- EDIT MODALS --}}
+        {{-- MODALES EDITAR Y ELIMINAR --}}
         @foreach ($tasks as $task)
-        <div x-show="modal === 'edit-{{ $task->id }}'" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
-            <div class="fixed inset-0 bg-black/50" @click="modal = null"></div>
-            <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 z-10">
-                <h3 class="text-lg font-bold mb-4">Editar Tarea</h3>
-                <form method="POST" action="{{ route('tasks.update', $task) }}">
-                    @csrf @method('PUT')
-                    <div class="mb-3">
-                        <label class="block text-sm font-medium mb-1">Título *</label>
-                        <input type="text" name="title" value="{{ old('title', $task->title) }}" required class="w-full border rounded-lg px-3 py-2 text-sm">
-                        @error('title') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="block text-sm font-medium mb-1">Descripción</label>
-                        <textarea name="description" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm">{{ old('description', $task->description) }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="block text-sm font-medium mb-1">Estado</label>
-                        <select name="status" class="w-full border rounded-lg px-3 py-2 text-sm">
-                            <option value="pending" {{ $task->status=='pending'?'selected':'' }}>Pendiente</option>
-                            <option value="in_progress" {{ $task->status=='in_progress'?'selected':'' }}>En progreso</option>
-                            <option value="completed" {{ $task->status=='completed'?'selected':'' }}>Completada</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" @click="modal = null" class="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-50">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">Guardar</button>
-                    </div>
-                </form>
+        <template x-teleport="body">
+            <div x-show="modal === 'edit-{{ $task->id }}'" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div class="fixed inset-0 bg-black/50" @click="modal = null"></div>
+                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 z-10">
+                    <h3 class="text-lg font-bold mb-4">Editar Tarea</h3>
+                    <form method="POST" action="{{ route('tasks.update', $task) }}">
+                        @csrf @method('PUT')
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Título *</label>
+                            <input type="text" name="title" value="{{ old('title', $task->title) }}" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                            @error('title') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Descripción</label>
+                            <textarea name="description" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm">{{ old('description', $task->description) }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Estado</label>
+                            <select name="status" class="w-full border rounded-lg px-3 py-2 text-sm">
+                                <option value="pending" {{ $task->status=='pending'?'selected':'' }}>Pendiente</option>
+                                <option value="in_progress" {{ $task->status=='in_progress'?'selected':'' }}>En progreso</option>
+                                <option value="completed" {{ $task->status=='completed'?'selected':'' }}>Completada</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" @click="modal = null" class="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-50">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">Guardar</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
 
-        {{-- DELETE MODALS --}}
-        <div x-show="modal === 'delete-{{ $task->id }}'" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
-            <div class="fixed inset-0 bg-black/50" @click="modal = null"></div>
-            <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 z-10 text-center">
-                <p class="text-gray-700 mb-4">¿Eliminar "<strong>{{ $task->title }}</strong>"?</p>
-                <form method="POST" action="{{ route('tasks.destroy', $task) }}">
-                    @csrf @method('DELETE')
-                    <div class="flex justify-center gap-2">
-                        <button type="button" @click="modal = null" class="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-50">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700">Eliminar</button>
-                    </div>
-                </form>
+            <div x-show="modal === 'delete-{{ $task->id }}'" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div class="fixed inset-0 bg-black/50" @click="modal = null"></div>
+                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 z-10 text-center">
+                    <p class="text-gray-700 mb-4">¿Eliminar "<strong>{{ $task->title }}</strong>"?</p>
+                    <form method="POST" action="{{ route('tasks.destroy', $task) }}">
+                        @csrf @method('DELETE')
+                        <div class="flex justify-center gap-2">
+                            <button type="button" @click="modal = null" class="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-50">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700">Eliminar</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+        </template>
         @endforeach
     </div>
-    <style>[x-cloak] { display: none !important; }</style>
 </x-app-layout>
