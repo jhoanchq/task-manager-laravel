@@ -17,6 +17,11 @@ class TaskController extends Controller
         return view('tasks.index', compact('tasks'));
     }
 
+    public function create()
+    {
+        return view('tasks.create');
+    }
+
     public function store(StoreTaskRequest $request)
     {
         Task::create([
@@ -26,6 +31,12 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.index')
             ->with('success', 'Tarea creada exitosamente.');
+    }
+
+    public function edit(Task $task)
+    {
+        Gate::authorize('update', $task);
+        return view('tasks.edit', compact('task'));
     }
 
     public function update(UpdateTaskRequest $request, Task $task)
