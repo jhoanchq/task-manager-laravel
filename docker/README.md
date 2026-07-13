@@ -4,6 +4,147 @@
 
 ---
 
+# GUÍA RÁPIDA DE INSTALACIÓN
+
+## Requisitos
+
+| Herramienta | Versión mínima | Cómo verificar |
+|-------------|---------------|----------------|
+| **Docker Desktop** | 24+ | `docker --version` |
+| **Docker Compose** | 2.20+ | `docker compose version` |
+| **Git** | 2.30+ | `git --version` |
+| **Sistema** | Windows 10+/Linux/macOS | — |
+
+> ⚠ **Windows:** Debes tener WSL2 instalado y Docker Desktop configurado con el backend WSL2.
+> Para verificar: `wsl --status`
+
+## Instalación paso a paso
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/jhoanchq/task-manager-laravel.git
+cd task-manager-laravel
+```
+
+### 2. Configurar variables de entorno
+
+```bash
+cp .env.example .env
+# O usar la versión Docker específica:
+cp docker/.env.example .env
+```
+
+> Edita `.env` si necesitas cambiar credenciales de BD, Redis o el puerto de Nginx.
+
+### 3. Iniciar los contenedores
+
+```bash
+docker compose -f docker/docker-compose.yml up -d
+```
+
+Este comando:
+- Descarga las imágenes (MySQL 8.4, Redis 7.4, Nginx 1.27, PHP 8.3)
+- Construye la imagen de la aplicación Laravel
+- Crea las redes `taskman_frontend` y `taskman_backend`
+- Crea los volúmenes `taskman_db_data`, `taskman_app_storage`, `taskman_redis_data`, `taskman_nginx_logs`
+- Inicia los 4 contenedores en orden: db → redis → app → nginx
+
+**Primera vez:** La descarga+construcción toma **3-8 minutos** (depende del internet).
+
+Para ver el progreso:
+```bash
+docker compose -f docker/docker-compose.yml logs -f
+```
+
+### 4. Ejecutar migraciones y seeders
+
+```bash
+# Esperar a que MySQL esté listo (15-30 segundos)
+docker compose exec app php artisan migrate --seed
+```
+
+Este comando crea las tablas de la base de datos y poblarla con datos de prueba:
+- **Usuario demo:** `demo@taskmanager.com` / `password`
+- **10 tareas de ejemplo** (5 pendientes, 3 en progreso, 2 completadas)
+
+### 5. Storage link
+
+```bash
+docker compose exec app php artisan storage:link
+```
+
+### 6. Abrir en el navegador
+
+```
+http://localhost
+```
+
+Deberías ver la página de bienvenida de Laravel. Ve a `/login` e ingresa con el usuario demo.
+
+## Comandos de uso diario
+
+```bash
+# Ver logs en tiempo real
+docker compose -f docker/docker-compose.yml logs -f
+
+# Ver logs de un servicio específico
+docker compose -f docker/docker-compose.yml logs -f app
+
+# Ejecutar comandos Artisan
+docker compose -f docker/docker-compose.yml exec app php artisan tinker
+docker compose -f docker/docker-compose.yml exec app php artisan make:model Producto
+docker compose -f docker/docker-compose.yml exec app php artisan test
+
+# Acceder a la base de datos
+docker compose -f docker/docker-compose.yml exec db mysql -u taskman -p taskmanager
+
+# Detener servicios (los datos se conservan en volúmenes)
+docker compose -f docker/docker-compose.yml down
+
+# Detener y ELIMINAR volúmenes (BORRA BD + Redis + storage)
+docker compose -f docker/docker-compose.yml down -v
+
+# Reconstruir la imagen de la app (tras cambios en composer.json)
+docker compose -f docker/docker-compose.yml build app
+docker compose -f docker/docker-compose.yml up -d
+```
+
+## Probar la API REST
+
+Una vez funcionando, prueba la API con Postman o cURL:
+
+```bash
+# Registrar un usuario
+curl -X POST http://localhost/api/v1/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@test.com","password":"12345678","password_confirmation":"12345678"}'
+
+# O usando el usuario demo:
+curl -X POST http://localhost/api/v1/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@taskmanager.com","password":"password"}'
+
+# Usar el token recibido para listar tareas
+curl -X GET http://localhost/api/v1/tasks \
+  -H "Authorization: Bearer TU_TOKEN_AQUI"
+
+# Ver documentación Swagger interactiva
+# Abrir en navegador: http://localhost/docs
+```
+
+## Producción
+
+Para desplegar en un servidor de producción:
+
+```bash
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
+```
+
+Esto usa `Dockerfile.prod` (imagen optimizada, multi-etapa, sin Composer ni Node en runtime).
+
+---
+
 # PARTE I: REDES EN DOCKER
 
 ## 1.1 ¿Qué es una red en Docker?
