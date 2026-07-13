@@ -1,0 +1,26 @@
+# ── docker-compose.prod.yml ────────────────────────────────
+# Override para producción: sin bind mounts, healthchecks,
+# reinicio siempre, logs rotados.
+# Usar: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  app:
+    build:
+      dockerfile: Dockerfile.prod
+    volumes:
+      # En producción NO se usa bind mount del código fuente.
+      # La aplicación va dentro de la imagen.
+      - app_storage:/var/www/storage
+
+  nginx:
+    volumes:
+      - nginx_logs:/var/log/nginx
+      # En producción, los assets estáticos van en la imagen, no en bind mount
+
+  db:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M

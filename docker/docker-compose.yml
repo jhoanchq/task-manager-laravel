@@ -1,0 +1,167 @@
+# =============================================================================
+# docker-compose.yml — Task Manager Laravel
+# NIVEL 4: Volúmenes y Redes — Configuración completa multi-servicio
+# =============================================================================
+#
+#  ┌─────────────────────────────────────────────────────────────────────┐
+#  │                        DIAGRAMA DE RED                             │
+#  │                                                                     │
+#  │    Internet                                                         │
+#  │       │                                                             │
+#  │    [nginx:80]  ←── frontend_network (expuesta al host)              │
+#  │       │                                                             │
+#  │    [app:9000]                                                       │
+#  │       │                                                             │
+#  │    ┌──┴──────────────┐                                              │
+#  │    │                 │                                              │
+#  │ [db:3306]    [redis:6379]  ←── backend_network (aislada)           │
+#  └─────────────────────────────────────────────────────────────────────┘
+#
+#  Volúmenes:
+#    db_data    → Datos persistentes de MySQL (named volume)
+#    redis_data → Datos persistentes de Redis  (named volume)
+#    app_storage → Archivos subidos + logs     (named volume)
+#    ./         → Código fuente como bind mount (dev)
+#
+
+services:
+
+  # ── NGINX ───────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: taskman-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # bind mount: configuración de Nginx desde el host
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # bind mount: código de la app para servir archivos estáticos
+      - ./:/var/www:ro
+      # named volume: logs de Nginx persistentes
+      - nginx_logs:/var/log/nginx
+    networks:
+      - frontend_network
+    depends_on:
+      app:
+        condition: service_started
+
+  # ── LARAVEL APP (PHP-FPM) ────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskman-app
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost}
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-taskmanager}
+      DB_USERNAME: ${DB_USERNAME:-taskman}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_PORT: 6379
+      CACHE_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+    volumes:
+      # bind mount: código fuente editable en caliente (desarrollo)
+      - ./:/var/www
+      # named volume: almacenamiento (logs, uploads, framework/cache)
+      - app_storage:/var/www/storage
+    networks:
+      - frontend_network
+      - backend_network
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # ── MYSQL ────────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.4
+    container_name: taskman-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-taskmanager}
+      MYSQL_USER: ${DB_USERNAME:-taskman}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      # Opcional: exponer MySQL al host para phpMyAdmin, DBeaver, etc.
+      - "3307:3306"
+    volumes:
+      # named volume: datos persistentes (NO se pierden al hacer docker compose down)
+      - db_data:/var/lib/mysql
+      # bind mount: script de inicialización (opcional)
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - backend_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root_secret}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+
+  # ── REDIS ────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7.4-alpine
+    container_name: taskman-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      # named volume: datos AOF/RDB persistentes
+      - redis_data:/data
+    networks:
+      - backend_network
+
+# ── VOLÚMENES ─────────────────────────────────────────────────────────
+volumes:
+  db_data:
+    driver: local
+    name: taskman_db_data
+    # Datos de MySQL. Se almacenan en /var/lib/docker/volumes/taskman_db_data/
+    # Persisten aunque los contenedores se eliminen.
+    # Para respaldar: docker run --rm -v taskman_db_data:/data -v ./backup:/backup alpine tar czf /backup/db_data.tar.gz -C /data .
+
+  app_storage:
+    driver: local
+    name: taskman_app_storage
+    # Archivos de Laravel: logs, sesiones, uploads, cache.
+    # Evita que se regeneren permisos cada vez que se reconstruye.
+
+  redis_data:
+    driver: local
+    name: taskman_redis_data
+    # Datos de Redis en modo append-only (AOF).
+    # Garantiza que las colas de jobs no se pierdan al reiniciar.
+
+  nginx_logs:
+    driver: local
+    name: taskman_nginx_logs
+    # Logs de acceso y error de Nginx.
+
+# ── REDES ─────────────────────────────────────────────────────────────
+networks:
+  frontend_network:
+    driver: bridge
+    name: taskman_frontend
+    # Red expuesta al host. Contiene: nginx (público), app (privado).
+    # El host puede acceder a nginx vía localhost:80.
+    # El contenedor app es accesible SOLO desde nginx (no desde el host).
+
+  backend_network:
+    driver: bridge
+    name: taskman_backend
+    # Red aislada. Contiene: app, db, redis.
+    # Ningún servicio externo puede alcanzar db o redis directamente.
+    # El contenedor app se conecta a db:3306 y redis:6379.
+    # Esta red NO tiene acceso desde el host.
