@@ -16,5 +16,4 @@ storage/logs/
 .scribe/
 .idea/
 .vscode/
-*.md
-docker/
+docker/README.md
