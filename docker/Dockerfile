@@ -24,11 +24,13 @@ RUN npm run build
 # ── ETAPA 3: Aplicación final ─────────────────────────────────────────────
 FROM php:8.3-fpm-alpine AS app
 
-# Paquetes del sistema
+# Paquetes del sistema + build deps para pecl
 RUN apk add --no-cache \
     git unzip curl libzip-dev oniguruma-dev nginx supervisor \
+    autoconf g++ gcc make linux-headers \
     && docker-php-ext-install pdo_mysql mbstring zip bcmath pcntl \
-    && pecl install redis && docker-php-ext-enable redis
+    && pecl install redis && docker-php-ext-enable redis \
+    && apk del autoconf g++ gcc make linux-headers
 
 # Composer
 COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
